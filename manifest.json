@@ -20,7 +20,7 @@
     },
 
     "oauth2": {
-        "client_id":"85232819736-0csjg4ksiikoquplsgbea5uklmiphg09.apps.googleusercontent.com",
+        "client_id":"85232819736-kvha7463v3n834f8s2gfjqfrsoefhhm0.apps.googleusercontent.com",
         "scopes": ["https://www.googleapis.com/auth/calendar"]
     },
     "permissions": ["identity", "tabs"],

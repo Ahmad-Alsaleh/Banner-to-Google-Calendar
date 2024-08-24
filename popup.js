@@ -29,8 +29,7 @@ const requestToken = async () => {
   const manifest = chrome.runtime.getManifest();
   const REDIRECT_URL = chrome.identity.getRedirectURL();
   // client ID of the Web Application and NOT the chrome extension
-  const CLIENT_ID =
-    "85232819736-kvha7463v3n834f8s2gfjqfrsoefhhm0.apps.googleusercontent.com";
+  const CLIENT_ID = manifest.oauth2.client_id;
   const SCOPES = manifest.oauth2.scopes;
   const AUTH_URL = `https://accounts.google.com/o/oauth2/auth\
 ?client_id=${CLIENT_ID}\
