@@ -1,4 +1,15 @@
 import moment from "moment";
+import { createEvents } from "ics";
+
+const dayMapping = {
+  Monday: "MO",
+  Tuesday: "TU",
+  Wednesday: "WE",
+  Thursday: "TH",
+  Friday: "FR",
+  Saturday: "SA",
+  Sunday: "SU",
+};
 
 const getAuthToken = async () => {
   // Check localStorage for existing token
@@ -74,8 +85,7 @@ const createCalendar = async (calendarName, headers) => {
   return await res.json();
 };
 
-const createSchedule = async (event) => {
-  event.preventDefault();
+const createSchedule = async () => {
   let data;
   let headers;
   document.getElementById("submit").disabled = true;
@@ -127,16 +137,6 @@ const deleteCalendar = async (calendarName, headers) => {
 };
 
 const insertEvent = async (calendarName, headers, eventData, colorId) => {
-  const dayMapping = {
-    Monday: "MO",
-    Tuesday: "TU",
-    Wednesday: "WE",
-    Thursday: "TH",
-    Friday: "FR",
-    Saturday: "SA",
-    Sunday: "SU",
-  };
-
   let formattedDays = eventData.days.map((day) => dayMapping[day]).join(",");
   let startTime = moment(eventData.startTime, "dddd h:mm a").toISOString();
   let endTime = moment(eventData.endTime, "dddd h:mm a").toISOString();
@@ -187,22 +187,58 @@ const retrieveTableData = async () => {
   return response.elems;
 };
 
-// create a function that displays the error on the DOM
+const downloadIcal = async () => {
+  const calendarName = document.getElementById("textin").value;
+  const fileName = calendarName + ".ics";
+  const tableData = await retrieveTableData();
+  const { error, value } = createEvents(
+    tableData.map((eventData) => {
+      return {
+        title: eventData.course,
+        location: eventData.location,
+        calName: calendarName,
+        start: moment(eventData.startTime, "dddd h:mm a").toDate().getTime(),
+        end: moment(eventData.endTime, "dddd h:mm a").toDate().getTime(),
+        recurrenceRule:
+          "FREQ=WEEKLY;BYDAY=" +
+          eventData.days.map((day) => dayMapping[day]).join(","),
+      };
+    })
+  );
+  if (error) {
+    console.error(error);
+    displayMessage("Failed to create iCal file", "red");
+    return;
+  }
+  const file = new File([value], fileName, { type: "text/calendar" });
+  const url = URL.createObjectURL(file);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = fileName;
+
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+
+  URL.revokeObjectURL(url);
+};
+
 const displayMessage = (message, color) => {
   const messageDiv = document.getElementById("message");
   messageDiv.textContent = message;
   messageDiv.style.display = "block";
   messageDiv.style.color = color;
-  messageDiv.style.border = "2px solid";
-  messageDiv.style.borderRadius = "10px";
-  messageDiv.style.borderColor = color;
-  messageDiv.style.padding = "5px";
-  messageDiv.style.fontSize = "10pt";
-
   setTimeout(() => {
     messageDiv.textContent = "";
     messageDiv.style.display = "none";
   }, 5000);
 };
 
-document.getElementById("form").onsubmit = createSchedule;
+document.getElementById("form").onsubmit = async (event) => {
+  event.preventDefault();
+  if (event.submitter.value === "submit") {
+    await createSchedule();
+  } else if (event.submitter.value === "ical") {
+    await downloadIcal();
+  }
+};
