@@ -9,6 +9,6 @@
   },
   "scripts": {
     "build": "rm -rf ./dist && parcel build manifest.json --config @parcel/config-webextension",
-    "build:test": "parcel build manifest.json --config @parcel/config-webextension --no-optimize"
+    "build:test": "rm -rf ./dist && parcel build manifest.json --config @parcel/config-webextension --no-optimize"
   }
 }
