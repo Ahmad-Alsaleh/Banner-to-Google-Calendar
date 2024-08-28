@@ -3,3 +3,20 @@ node_modules/*
 
 .parcel-cache/
 dist/
+
+### Hugo ###
+# Generated files by hugo
+site/public/
+site/resources/_gen/
+site/assets/jsconfig.json
+site/hugo_stats.json
+
+# Executable may be added to repository
+site/hugo.exe
+site/hugo.darwin
+site/hugo.linux
+
+# Temporary lock file while building
+site/.hugo_build.lock
+
+# End of https://www.toptal.com/developers/gitignore/api/hugo
