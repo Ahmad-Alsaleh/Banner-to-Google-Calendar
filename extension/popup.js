@@ -11,6 +11,20 @@ const dayMapping = {
   Sunday: "SU",
 };
 
+const colors = [
+  "#a4bdfc",
+  "#7ae7bf",
+  "#dbadff",
+  "#ff887c",
+  "#fbd75b",
+  "#ffb878",
+  "#46d6db",
+  "#e1e1e1",
+  "#5484ed",
+  "#51b749",
+  "#dc2127",
+];
+
 const createColorOption = (colorId, color) => {
   const elementString = `
         <label>
@@ -259,15 +273,6 @@ document.getElementById("form").onsubmit = async (event) => {
 
 const colorpicker = document.getElementById("color-picker");
 
-const colors = [
-  "#a4bdfc",
-  "#7ae7bf",
-  "#dbadff",
-  "#ff887c",
-  "#fbd75b",
-];
-
-//arbitrary colors and ids, make them match the google calendar colors
 colors.forEach((color, index) => {
   colorpicker.appendChild(createColorOption(index + 1, color));
 });
