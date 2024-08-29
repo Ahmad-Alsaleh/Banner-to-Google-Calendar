@@ -128,14 +128,15 @@ const createSchedule = async () => {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     };
-
+    
+    const tableData = await retrieveTableData();
+    
     calendarData = await createCalendar(calendarName, headers);
 
     const selectedColorId = document.querySelector(
       'input[name="colorPicker"]:checked'
     ).value;
 
-    const tableData = await retrieveTableData();
     let promises;
     if (selectedColorId === "-1") {
       promises = tableData.map((eventData, index) =>
