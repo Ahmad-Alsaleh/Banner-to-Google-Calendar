@@ -43,18 +43,17 @@ const createColorOption = (colorId, color, isChecked = false) => {
 };
 
 const getAuthToken = async () => {
-  // Check localStorage for existing token
   let token = localStorage.getItem("authToken");
   const expirationTime = localStorage.getItem("authTokenExpiration");
   if (token && expirationTime && Date.now() < expirationTime) {
-    return token; // Return valid token if not expired
+    return token;
   }
 
   const { token: newToken, expiresIn } = await requestToken();
   token = newToken;
   localStorage.setItem("authToken", token);
 
-  const expiration = Date.now() + expiresIn * 1000; //convert to msec
+  const expiration = Date.now() + expiresIn * 1000;
   localStorage.setItem("authTokenExpiration", expiration.toString());
   return token;
 };
@@ -62,8 +61,8 @@ const getAuthToken = async () => {
 const parseResponse = (responseUri) => {
   let responseParams = responseUri.split("#")[1];
   responseParams = new URLSearchParams(responseParams);
-  let token = responseParams.get("access_token");
-  let expiresIn = responseParams.get("expires_in");
+  const token = responseParams.get("access_token");
+  const expiresIn = responseParams.get("expires_in");
   return { token, expiresIn };
 };
 
@@ -101,7 +100,7 @@ const requestToken = async () => {
 };
 
 const createCalendar = async (calendarName, headers) => {
-  let res = await fetch("https://www.googleapis.com/calendar/v3/calendars", {
+  const res = await fetch("https://www.googleapis.com/calendar/v3/calendars", {
     method: "POST",
     headers: headers,
     body: JSON.stringify({
@@ -164,7 +163,7 @@ const createSchedule = async () => {
 };
 
 const deleteCalendar = async (calendarName, headers) => {
-  let res = await fetch(
+  const res = await fetch(
     `https://www.googleapis.com/calendar/v3/calendars/${calendarName}`,
     {
       method: "DELETE",
@@ -180,9 +179,9 @@ const deleteCalendar = async (calendarName, headers) => {
 };
 
 const insertEvent = async (calendarName, headers, eventData, colorId) => {
-  let formattedDays = eventData.days.map((day) => dayMapping[day]).join(",");
-  let startTime = moment(eventData.startTime, "dddd h:mm a").toISOString();
-  let endTime = moment(eventData.endTime, "dddd h:mm a").toISOString();
+  const formattedDays = eventData.days.map((day) => dayMapping[day]).join(",");
+  const startTime = moment(eventData.startTime, "dddd h:mm a").toISOString();
+  const endTime = moment(eventData.endTime, "dddd h:mm a").toISOString();
   const body = {
     summary: eventData.course,
     location: eventData.location,
@@ -198,7 +197,7 @@ const insertEvent = async (calendarName, headers, eventData, colorId) => {
     recurrence: ["RRULE:FREQ=WEEKLY;BYDAY=" + formattedDays],
   };
 
-  let res = await fetch(
+  const res = await fetch(
     `https://www.googleapis.com/calendar/v3/calendars/${calendarName}/events`,
     {
       method: "POST",
@@ -221,7 +220,6 @@ const retrieveTableData = async () => {
     message: "retrieve_table_data",
   });
 
-  // console.log('response', response)
   if (!response.elems) {
     console.error("Failed to retrieve table data");
     return;
