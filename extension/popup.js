@@ -25,17 +25,20 @@ const colors = [
   "#dc2127",
 ];
 
-const createColorOption = (colorId, color) => {
+const createColorOption = (colorId, color, isChecked = false) => {
   const elementString = `
         <label>
-          <input type="radio" name="colorPicker" value=${colorId}/>
+          <input type="radio" name="colorPicker" value=${colorId}>
           <span class="custom-radio"></span>
         </label>
         `;
   const parser = new DOMParser();
   const doc = parser.parseFromString(elementString, "text/html");
   const element = doc.body.firstChild;
-  doc.getElementsByTagName("span")[0].style.backgroundColor = color;
+  const spanElement = doc.getElementsByTagName("span")[0];
+  if (color) spanElement.style.backgroundColor = color;
+  else spanElement.classList.add("none-color");
+  doc.getElementsByTagName("input")[0].checked = isChecked;
   return element;
 };
 
@@ -114,7 +117,7 @@ const createCalendar = async (calendarName, headers) => {
 };
 
 const createSchedule = async () => {
-  let data;
+  let calendarData;
   let headers;
   document.getElementById("submit").disabled = true;
   displayMessage("Creating schedule...", "black");
@@ -127,20 +130,32 @@ const createSchedule = async () => {
       "Content-Type": "application/json",
     };
 
-    data = await createCalendar(calendarName, headers);
+    calendarData = await createCalendar(calendarName, headers);
+
+    const selectedColorId = document.querySelector(
+      'input[name="colorPicker"]:checked'
+    ).value;
 
     const tableData = await retrieveTableData();
-    let promises = tableData.map((eventData, index) =>
-      insertEvent(data.id, headers, eventData, (index % 11) + 1)
-    );
-    let results = await Promise.all(promises);
+    let promises;
+    if (selectedColorId === "-1") {
+      promises = tableData.map((eventData, index) =>
+        insertEvent(calendarData.id, headers, eventData, (index % 11) + 1)
+      );
+    } else {
+      promises = tableData.map((eventData) =>
+        insertEvent(calendarData.id, headers, eventData, selectedColorId)
+      );
+    }
+
+    await Promise.all(promises);
     displayMessage("Schedule created successfully", "green");
   } catch (error) {
     if (
       error.message !== "Failed to create calendar" &&
       error.message !== "Failed to obtain token"
     )
-      await deleteCalendar(data.id, headers);
+      await deleteCalendar(calendarData.id, headers);
     console.error(error);
     displayMessage(error, "red");
   } finally {
@@ -271,8 +286,10 @@ document.getElementById("form").onsubmit = async (event) => {
   }
 };
 
-const colorpicker = document.getElementById("color-picker");
+const colorPicker = document.getElementById("color-picker");
+
+colorPicker.appendChild(createColorOption(-1, null, true));
 
 colors.forEach((color, index) => {
-  colorpicker.appendChild(createColorOption(index + 1, color));
+  colorPicker.appendChild(createColorOption(index + 1, color));
 });

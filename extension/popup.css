@@ -117,3 +117,17 @@ input[type="radio"]:checked + .custom-radio::after {
   grid-auto-flow: column;
   column-gap: 5px;
 }
+
+.none-color {
+  background: repeating-linear-gradient(
+    90deg,
+    #ff887c 0,
+    #ff887c 5px,
+    #ffb878 5px,
+    #ffb878 10px,
+    #51b749 10px,
+    #51b749 15px,
+    #5484ed 15px,
+    #5484ed 20px
+  );
+}
