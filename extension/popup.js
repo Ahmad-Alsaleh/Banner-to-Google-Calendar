@@ -11,6 +11,20 @@ const dayMapping = {
   Sunday: "SU",
 };
 
+const createColorOption = (colorId, color) => {
+  const elementString = `
+        <label>
+          <input type="radio" name="colorPicker" value=${colorId}/>
+          <span class="custom-radio"></span>
+        </label>
+        `;
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(elementString, "text/html");
+  const element = doc.body.firstChild;
+  doc.getElementsByTagName("span")[0].style.backgroundColor = color;
+  return element;
+};
+
 const getAuthToken = async () => {
   // Check localStorage for existing token
   let token = localStorage.getItem("authToken");
@@ -242,3 +256,18 @@ document.getElementById("form").onsubmit = async (event) => {
     await downloadIcal();
   }
 };
+
+const colorpicker = document.getElementById("color-picker");
+
+const colors = [
+  "#a4bdfc",
+  "#7ae7bf",
+  "#dbadff",
+  "#ff887c",
+  "#fbd75b",
+];
+
+//arbitrary colors and ids, make them match the google calendar colors
+colors.forEach((color, index) => {
+  colorpicker.appendChild(createColorOption(index + 1, color));
+});

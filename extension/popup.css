@@ -1,5 +1,5 @@
 body {
-  height: 150px;
+  height: 300px;
   width: 300px;
   font-family: "Roboto", sans-serif;
   font-size: 14pt;
@@ -75,4 +75,38 @@ form {
   justify-content: center;
   gap: 20px;
   width: 100%;
+}
+
+input[type="radio"] {
+  display: none;
+}
+
+/* Create a custom radio button */
+.custom-radio {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  position: relative;
+  cursor: pointer;
+}
+
+/* Create the inner dot for the checked state */
+.custom-radio::after {
+  content: "";
+  display: block;
+  width: 12px;
+  height: 12px;
+  background-color: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+}
+
+/* Show the inner dot when checked */
+input[type="radio"]:checked + .custom-radio::after {
+  opacity: 1;
 }
