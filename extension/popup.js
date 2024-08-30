@@ -1,5 +1,11 @@
 import moment from "moment";
 import { createEvents } from "ics";
+import {
+  AuthenticationError,
+  CalendarCreationError,
+  EventError,
+  ParsingError,
+} from "./errors";
 
 const dayMapping = {
   Monday: "MO",
@@ -58,7 +64,7 @@ const getAuthToken = async () => {
   return token;
 };
 
-const parseResponse = (responseUri) => {
+const parseAuthResponse = (responseUri) => {
   let responseParams = responseUri.split("#")[1];
   responseParams = new URLSearchParams(responseParams);
   const token = responseParams.get("access_token");
@@ -78,25 +84,23 @@ const requestToken = async () => {
 &redirect_uri=${encodeURIComponent(REDIRECT_URL)}\
 &scope=${encodeURIComponent(SCOPES.join(" "))}`;
 
-  try {
-    let responseUri = await chrome.identity.launchWebAuthFlow({
+  const responseUri = await chrome.identity
+    .launchWebAuthFlow({
       interactive: true,
       url: AUTH_URL,
+    })
+    .catch((error) => {
+      throw new AuthenticationError("Failed to obtain token " + error);
     });
 
-    if (!responseUri) {
-      throw new Error("Failed to obtain token");
-    }
-
-    const { token, expiresIn } = parseResponse(responseUri);
-    console.log("token", token, "expiresIn", expiresIn);
-    if (!token || token.length < 1) throw new Error("Failed to obtain token");
-
-    return { token, expiresIn };
-  } catch (error) {
-    console.error(error);
-    throw new Error("Failed to obtain token");
+  if (!responseUri) {
+    throw new AuthenticationError("Failed to obtain token");
   }
+
+  const { token, expiresIn } = parseAuthResponse(responseUri);
+  if (!token) throw new AuthenticationError("Failed to obtain token");
+
+  return { token, expiresIn };
 };
 
 const createCalendar = async (calendarName, headers) => {
@@ -106,61 +110,15 @@ const createCalendar = async (calendarName, headers) => {
     body: JSON.stringify({
       summary: calendarName,
     }),
+  }).catch((error) => {
+    throw new CalendarCreationError("Failed to create calendar " + error);
   });
+
   if (!res.ok) {
-    console.error("Failed to create calendar:", res.status);
-    throw new Error("Failed to create calendar");
+    throw new CalendarCreationError("Failed to create calendar");
   }
 
   return await res.json();
-};
-
-const createSchedule = async () => {
-  let calendarData;
-  let headers;
-  document.getElementById("submit").disabled = true;
-  displayMessage("Creating schedule...", "black");
-  try {
-    const token = await getAuthToken();
-    const calendarName = document.getElementById("textin").value;
-
-    headers = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-    
-    const tableData = await retrieveTableData();
-    
-    calendarData = await createCalendar(calendarName, headers);
-
-    const selectedColorId = document.querySelector(
-      'input[name="colorPicker"]:checked'
-    ).value;
-
-    let promises;
-    if (selectedColorId === "-1") {
-      promises = tableData.map((eventData, index) =>
-        insertEvent(calendarData.id, headers, eventData, (index % 11) + 1)
-      );
-    } else {
-      promises = tableData.map((eventData) =>
-        insertEvent(calendarData.id, headers, eventData, selectedColorId)
-      );
-    }
-
-    await Promise.all(promises);
-    displayMessage("Schedule created successfully", "green");
-  } catch (error) {
-    if (
-      error.message !== "Failed to create calendar" &&
-      error.message !== "Failed to obtain token"
-    )
-      await deleteCalendar(calendarData.id, headers);
-    console.error(error);
-    displayMessage(error, "red");
-  } finally {
-    document.getElementById("submit").disabled = false;
-  }
 };
 
 const deleteCalendar = async (calendarName, headers) => {
@@ -174,6 +132,7 @@ const deleteCalendar = async (calendarName, headers) => {
 
   if (!res.ok) {
     console.error("Failed to delete calendar:", res.status);
+    return;
   }
 
   return await res.text();
@@ -205,11 +164,12 @@ const insertEvent = async (calendarName, headers, eventData, colorId) => {
       headers: headers,
       body: JSON.stringify(body),
     }
-  );
+  ).catch((error) => {
+    throw new EventError("Failed to insert event" + error);
+  });
 
   if (!res.ok) {
-    console.error("Failed to insert event:", res.status);
-    throw new Error("Failed to insert event");
+    throw new EventError("Failed to insert event");
   }
 
   return await res.json();
@@ -217,52 +177,101 @@ const insertEvent = async (calendarName, headers, eventData, colorId) => {
 
 const retrieveTableData = async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  const response = await chrome.tabs.sendMessage(tab.id, {
+  const { elems, error } = await chrome.tabs.sendMessage(tab.id, {
     message: "retrieve_table_data",
   });
 
-  if (!response.elems) {
-    console.error("Failed to retrieve table data");
-    return;
+  if (error) {
+    throw new ParsingError(error);
   }
 
-  return response.elems;
+  return elems;
+};
+
+const createSchedule = async () => {
+  let calendarData;
+  let headers;
+  document.getElementById("submit").disabled = true;
+  displayMessage("Creating schedule...", "black");
+  try {
+    const token = await getAuthToken();
+    const calendarName = document.getElementById("textin").value;
+
+    headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+
+    const tableData = await retrieveTableData();
+
+    calendarData = await createCalendar(calendarName, headers);
+
+    const selectedColorId = document.querySelector(
+      'input[name="colorPicker"]:checked'
+    ).value;
+
+    let promises;
+    if (selectedColorId === "-1") {
+      promises = tableData.map((eventData, index) =>
+        insertEvent(calendarData.id, headers, eventData, (index % 11) + 1)
+      );
+    } else {
+      promises = tableData.map((eventData) =>
+        insertEvent(calendarData.id, headers, eventData, selectedColorId)
+      );
+    }
+
+    await Promise.all(promises);
+    displayMessage("Schedule created successfully", "green");
+  } catch (error) {
+    if (error instanceof EventError)
+      await deleteCalendar(calendarData.id, headers);
+
+    console.error(error);
+    displayMessage(error.message, "red");
+  } finally {
+    document.getElementById("submit").disabled = false;
+  }
 };
 
 const downloadIcal = async () => {
-  const calendarName = document.getElementById("textin").value;
-  const fileName = calendarName + ".ics";
-  const tableData = await retrieveTableData();
-  const { error, value } = createEvents(
-    tableData.map((eventData) => {
-      return {
-        title: eventData.course,
-        location: eventData.location,
-        calName: calendarName,
-        start: moment(eventData.startTime, "dddd h:mm a").toDate().getTime(),
-        end: moment(eventData.endTime, "dddd h:mm a").toDate().getTime(),
-        recurrenceRule:
-          "FREQ=WEEKLY;BYDAY=" +
-          eventData.days.map((day) => dayMapping[day]).join(","),
-      };
-    })
-  );
-  if (error) {
-    console.error(error);
+  try {
+    const calendarName = document.getElementById("textin").value;
+    const fileName = calendarName + ".ics";
+    const tableData = await retrieveTableData();
+    const { error, value } = createEvents(
+      tableData.map((eventData) => {
+        return {
+          title: eventData.course,
+          location: eventData.location,
+          calName: calendarName,
+          start: moment(eventData.startTime, "dddd h:mm a").toDate().getTime(),
+          end: moment(eventData.endTime, "dddd h:mm a").toDate().getTime(),
+          recurrenceRule:
+            "FREQ=WEEKLY;BYDAY=" +
+            eventData.days.map((day) => dayMapping[day]).join(","),
+        };
+      })
+    );
+    if (error) {
+      throw new ParsingError("Failed to create iCal file");
+    }
+
+    const file = new File([value], fileName, { type: "text/calendar" });
+    const url = URL.createObjectURL(file);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = fileName;
+
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Failed to create iCal file");
     displayMessage("Failed to create iCal file", "red");
-    return;
   }
-  const file = new File([value], fileName, { type: "text/calendar" });
-  const url = URL.createObjectURL(file);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = fileName;
-
-  document.body.appendChild(anchor);
-  anchor.click();
-  document.body.removeChild(anchor);
-
-  URL.revokeObjectURL(url);
 };
 
 const displayMessage = (message, color) => {

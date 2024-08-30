@@ -1,10 +1,23 @@
+import { ParsingError } from "./errors";
+
+const messageHandlers = {
+  retrieve_table_data: () => {
+    try {
+      const tableData = parseTimetable();
+      return { elems: tableData, error: null };
+    } catch (error) {
+      return { elems: [], error: error.message };
+    }
+  },
+  default: () => {
+    return { elems: [], error: "Invalid message" };
+  },
+};
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.message === "retrieve_table_data") {
-    const data = parseTimetable();
-    sendResponse({ elems: data });
-  } else {
-    sendResponse({ elems: [] });
-  }
+  const handler = messageHandlers[request.message] || messageHandlers.default;
+  const response = handler();
+  sendResponse(response);
 });
 
 const parseTimetable = () => {
@@ -17,9 +30,13 @@ const parseTimetable = () => {
     "Saturday",
     "Sunday",
   ];
-  const timetable = frames[1].document.querySelector(".datadisplaytable");
+  const timeTable = frames[1].document.querySelector(
+    '.datadisplaytable[summary="This layout table is used to present the weekly course schedule."]'
+  );
 
-  const rows = Array.from(timetable.querySelectorAll("tr"));
+  if (!timeTable) throw new ParsingError("Failed to parse timetable data");
+
+  const rows = Array.from(timeTable.querySelectorAll("tr"));
   rows.shift();
   let courses = {};
   let paddingTDs = [];
