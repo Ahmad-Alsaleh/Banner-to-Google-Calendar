@@ -24,8 +24,7 @@
         ]
     },
     "permissions": [
-        "identity",
-        "tabs"
+        "identity"
     ],
     "content_scripts": [
         {
