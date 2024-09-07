@@ -18,13 +18,15 @@ Since Manifest V3, Web extensions can't import scripts from CDNs directly into t
 NPM is used in this project and the dependencies are listed under `package.json`. They can be installed using the command:
 
 ```console
-npm install --prefix extension/
+cd extension/
+npm install
 ```
 
 The bundler used for this project is [parcel](https://github.com/parcel-bundler/parcel). However, any other bundler can be used. The development dependencies can be installed using:
 
 ```console
-npm install --prefix extension/ --include=dev 
+# Under extension directory
+npm install --include=dev 
 ```
 
 The build scripts are already inside `package.json`.
@@ -34,9 +36,10 @@ Use the `build` script to bundle the extension with optimization.
 Use the `build:test` script to bundle the extension without optimization. This is useful for faster builds when testing and debugging.
 
 ```console
-npm run --prefix extension/ build
+# Under extension directory
+npm run build
 # OR
-npm run --prefix extension/ build:test 
+npm run build:test 
 ```
 
 By default, the built program will be under `extension/dist/`.
@@ -52,7 +55,8 @@ In case of using other bundlers, you have the option of writing the build script
 and run it using:
 
 ```console
-npm run --prefix extension/ build
+# Under extension directory
+npm run build
 ```
 
 ## Loading the extension
