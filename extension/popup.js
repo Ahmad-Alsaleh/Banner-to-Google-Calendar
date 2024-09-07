@@ -31,17 +31,17 @@ const colors = [
   "#dc2127",
 ];
 
-const createColorOption = (color, index) => {
+const createColorOption = (color, colorId) => {
   const colorOption = document.createElement("div");
   colorOption.className = "color-option";
   colorOption.style.backgroundColor = color;
-  colorOption.dataset.colorId = index === -1 ? "-1" : index + 1;
+  colorOption.dataset.colorId = colorId;
   colorOption.addEventListener("click", () => selectColor(colorOption));
   return colorOption;
 }
 
 const selectColor = (colorOption) => {
-  document.querySelectorAll(".color-option").forEach(el => el.classList.remove("selected"));
+  document.querySelectorAll(".color-option.selected").forEach(el => el.classList.remove("selected"));
   colorOption.classList.add("selected");
 }
 
@@ -53,7 +53,7 @@ const initializeColorPicker = () => {
   colorPicker.appendChild(noneColor);
 
   colors.forEach((color, index) => {
-    colorPicker.appendChild(createColorOption(color, index));
+    colorPicker.appendChild(createColorOption(color, index + 1));
   });
 }
 
