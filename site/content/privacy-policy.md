@@ -3,9 +3,10 @@ title = 'Privacy Policy'
 date = 2024-08-28T18:51:59+04:00
 draft = false
 +++
+
 # Introduction
 
-Welcome to ***Banner to Google Calendar***. This Privacy Policy explains how we collect, use, and protect your information when you use our Chrome extension. By using our extension, you agree to the terms outlined in this policy.
+Welcome to **_Banner to Google Calendar_**. This Privacy Policy explains how we collect, use, and protect your information when you use our Chrome extension. By using our extension, you agree to the terms outlined in this policy.
 
 # Purpose of the Extension
 
@@ -15,7 +16,7 @@ Our extension automates the process of exporting AUS banner schedules to iCal fi
 
 - **Google Authentication**: We use Google authentication to make modifications to your Google Calendar. This process is managed by Google and we do not store your authentication data.
 
-- **Scraped Data**: We read the AUS banner *Student Schedule by Day and Time* page to scrape schedule information. This data is only used to export your schedule to iCal files and Google Calendar.
+- **Scraped Data**: We read the AUS banner _Student Schedule by Day and Time_ page to scrape schedule information. This data is only used to export your schedule to iCal files and Google Calendar.
 
 # Use of Collected Information
 
