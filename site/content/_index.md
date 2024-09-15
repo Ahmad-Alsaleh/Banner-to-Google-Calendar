@@ -4,7 +4,7 @@ date = 2024-08-28T19:05:35+04:00
 draft = false
 +++
 
-# Banner to Google Calendar
+# AUS Schedule Exporter
 
 This is a Chrome Extension made to automatically export your AUS schedule from banner.aus.edu to your Google Calendar.
 

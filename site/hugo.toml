@@ -1,4 +1,7 @@
 baseURL = 'https://yousefbilal.github.io/Banner-to-Google-Calendar/'
 languageCode = 'en-us'
-title = 'Banner to Google Calendar'
+title = 'AUS Schedule Exporter'
 theme = 'PaperMod'
+
+[params.label]
+icon = 'logo.png'

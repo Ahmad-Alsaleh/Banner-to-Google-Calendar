@@ -6,7 +6,7 @@ draft = false
 
 # Introduction
 
-Welcome to **_Banner to Google Calendar_**. This Privacy Policy explains how we collect, use, and protect your information when you use our Chrome extension. By using our extension, you agree to the terms outlined in this policy.
+Welcome to **_AUS Schedule Exporter_**. This Privacy Policy explains how we collect, use, and protect your information when you use our Chrome extension. By using our extension, you agree to the terms outlined in this policy.
 
 # Purpose of the Extension
 
