@@ -26,7 +26,7 @@ The information we collect is used solely for the purpose of exporting your AUS 
 
 We do not intentionally share your data with any third parties. However, Google, as the third party involved in authentication, may have access to your authentication data.
 
-# Data Storage and Protection
+# Data Retention and Deletion
 
 We do not store any of your data. All data processing is done in real-time and is not retained after the process is complete.
 
